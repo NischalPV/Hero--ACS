@@ -49,6 +49,8 @@ import {
 const addUserToThread = (displayName: string, emoji: string) => async (dispatch: Dispatch, getState: () => State) => {
     let state: State = getState();
 
+    console.log(state);
+
     const luisExists = state.threadMembers.threadMembers.some(l => l.displayName === 'LUIS');
     console.log(`LUIS exists: ${luisExists}`);
 
