@@ -100,12 +100,15 @@ export default (): JSX.Element => {
                     removedFromThreadHandler={() => setPage('removedFromThread')}
                     leaveChatHandler={() => setPage('end')}
                     startCallHandler={(): void => {
-                        // window.history.pushState({}, document.title, window.location.href + '?groupId=' + getGroupId());
+                        window.history.pushState({}, document.title, window.location.href + '?groupId=' + getGroupId());
+
                         // window.open(window.location.href+ '?groupId=' + getGroupId(), '_blank');
 
+
                         // setPage('callConfiguration');
+
                         showModal();
-                        
+
                     }}
                 />
             );

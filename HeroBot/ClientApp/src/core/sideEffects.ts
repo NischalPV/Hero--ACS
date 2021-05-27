@@ -52,6 +52,8 @@ const addUserToThread = (displayName: string, emoji: string) => async (dispatch:
     console.log(state);
 
     const luisExists = state.threadMembers.threadMembers.some(l => l.displayName === 'LUIS');
+    //const luisExists = state.contosoClient.users;
+
     console.log(`LUIS exists: ${luisExists}`);
 
     if (state.thread.threadId === undefined) {
