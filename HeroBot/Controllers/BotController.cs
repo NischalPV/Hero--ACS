@@ -43,16 +43,22 @@ namespace HeroBot.Controllers
         [HttpPost]
         public async Task<IActionResult> ProcessMessage(ClientChatMessage message)
         {
+            
             var weatherClient = _botServices.LuisWeatherRuntimeClient(_configuration);
             var ApplicationId = _configuration["LuisWeatherAppId"];
+            var DocumentAppId = _configuration["LuisDocumentAppId"];
             try
             {
                 var result = await weatherClient.Prediction.ResolveAsync(ApplicationId, message.Content.Message);
                 var WeatherDetails = new JObject();
+                //Intents -> Weather, Retrieve
+                    //Entities -> operation, document_type, type
+
                 if(result.Entities.Count > 0)
                 {
                     WeatherDetails = await _weatherServices.GetCurrentWeather(result.Entities[0].Entity);
-                    return Ok($"Weather Details:\n\nLooks like {WeatherDetails.SelectToken("weather[0].description")}\n\nTemperature: {WeatherDetails.SelectToken("main.temp")}\n\nFeels like: {WeatherDetails.SelectToken("main.feels_like")}\n\nHumidity: {WeatherDetails.SelectToken("main.humidity")}");
+                    //return Ok($"Weather Details:\n\nLooks like {WeatherDetails.SelectToken("weather[0].description")}\n\nTemperature: {WeatherDetails.SelectToken("main.temp")}\n\nFeels like: {WeatherDetails.SelectToken("main.feels_like")}\n\nHumidity: {WeatherDetails.SelectToken("main.humidity")}");
+                    return Ok($"<div>Weather Details:</br>Looks like {WeatherDetails.SelectToken("weather[0].description")}</br>Temperature: {WeatherDetails.SelectToken("main.temp")}</br>Feels like: {WeatherDetails.SelectToken("main.feels_like")}</br>Humidity: {WeatherDetails.SelectToken("main.humidity")}</div>");
 
                 }
                 // var json = JsonConvert.SerializeObject(result, Formatting.Indented);

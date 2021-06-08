@@ -718,7 +718,7 @@ const sendMessageHelperOverride = async (
     try {
         const messageResult = await chatThreadClient.sendMessage(
             { content: messageContent },
-            { senderDisplayName: displayName },
+            { senderDisplayName: displayName, type: 'html' },
            //  { sender: participantId }
         );
         const message: ChatMessage = await chatThreadClient.getMessage(messageResult.id);

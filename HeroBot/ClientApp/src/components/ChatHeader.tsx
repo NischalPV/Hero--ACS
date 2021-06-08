@@ -4,6 +4,7 @@ import React, { Dispatch, useEffect, useState } from 'react';
 
 import { copyIconStyle } from './styles/SidePanel.styles';
 import {
+    callIcon,
     chatHeaderContainerStyle,
     greyIconButtonStyle,
     iconButtonContainerStyle,
@@ -126,9 +127,19 @@ export default (props: ChatHeaderDispatchProps & ChatHeaderProps & ChatHeaderPan
                         
                     </Stack.Item>
                     <Stack.Item align="center">
+                        <div className={iconButtonContainerStyle}>
+                            <IconButton
+                                id="call"
+                                iconProps={callIcon}
+                                className={greyIconButtonStyle}
+                                onClick={() => {
+                                    startCallHandler();
+                                }}
+                            />
+                        </div>
                         <div className={largeButtonContainerStyle}>
                             <DefaultButton
-                                id="leave"
+                                id="call"
                                 className={leaveButtonStyle}
                                 onClick={() => {
                                     console.log('click event of video call');
