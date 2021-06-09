@@ -142,20 +142,10 @@ namespace HeroBot.Controllers
             //         }
             try
             {
-                if(user.DisplayName == "LUIS")
-                {
-                    var LuisExists = chatThreadClient.GetParticipants().Any(x => x.DisplayName == "LUIS");
+                var LuisExists = chatThreadClient.GetParticipants().Any(x => x.DisplayName == "LUIS");
 
-                    if (!LuisExists)
-                    {
-                        Response response = await chatThreadClient.AddParticipantAsync(chatParticipant);
-                    }
-                }
-                else
-                {
-                    Response response = await chatThreadClient.AddParticipantAsync(chatParticipant);
-                }
-                
+
+                Response response = await chatThreadClient.AddParticipantAsync(chatParticipant);
                 return Ok();
             }
             catch (Exception e)
