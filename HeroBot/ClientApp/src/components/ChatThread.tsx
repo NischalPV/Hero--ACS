@@ -54,6 +54,12 @@ const renderHyperlink = (text: string) => {
     );
 };
 
+const renderHtml = (text: string) => {
+    var parser = new DOMParser();
+    var doc = parser.parseFromString(text, 'text/html');
+    return doc.body;
+};
+
 let createdRef: any = createRef();
 let chatThreadRef: any = createRef();
 //  A Chatthread will be fed many messages so it will try to map out the messages out of the props and feed them into a
@@ -284,8 +290,8 @@ export default (props: ChatThreadProps): JSX.Element => {
                                 const messageContentItem = (
                                     <div>
                                         <LiveMessage message={`${message.mine ? '' : liveAuthor} ${message.content}`} aria-live="polite" />
-                                        <div>
-                                            {renderHyperlink(message.content.message)}
+                                        <div dangerouslySetInnerHTML={{ __html: message.content.message }}>
+                                           
                                         </div>
                                     </div>
                                 );

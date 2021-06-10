@@ -58,7 +58,7 @@ namespace HeroBot.Controllers
                 {
                     WeatherDetails = await _weatherServices.GetCurrentWeather(result.Entities[0].Entity);
                     //return Ok($"Weather Details:\n\nLooks like {WeatherDetails.SelectToken("weather[0].description")}\n\nTemperature: {WeatherDetails.SelectToken("main.temp")}\n\nFeels like: {WeatherDetails.SelectToken("main.feels_like")}\n\nHumidity: {WeatherDetails.SelectToken("main.humidity")}");
-                    return Ok($"<div>Weather Details:</br>Looks like {WeatherDetails.SelectToken("weather[0].description")}</br>Temperature: {WeatherDetails.SelectToken("main.temp")}</br>Feels like: {WeatherDetails.SelectToken("main.feels_like")}</br>Humidity: {WeatherDetails.SelectToken("main.humidity")}</div>");
+                    return Ok($"<div><b>Weather Details:</b></br>Looks like {WeatherDetails.SelectToken("weather[0].description")}</br>Temperature: {WeatherDetails.SelectToken("main.temp")}  &deg;C </br>Feels like: {WeatherDetails.SelectToken("main.feels_like")} &deg;C </br>Humidity: {WeatherDetails.SelectToken("main.humidity")}</div>");
 
                 }
                 // var json = JsonConvert.SerializeObject(result, Formatting.Indented);

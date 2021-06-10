@@ -10,10 +10,10 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.AspNetCore.SpaServices.Extensions" Version="5.0.6" />
-    <PackageReference Include="Azure.Communication.Identity" Version="1.0.0" />
+    <PackageReference Include="Microsoft.AspNetCore.SpaServices.Extensions" Version="5.0.7" />
+    <PackageReference Include="Azure.Communication.Identity" Version="1.0.1" />
     <PackageReference Include="Azure.Communication.Chat" Version="1.0.1" />
-    <PackageReference Include="Azure.Communication.Common" Version="1.0.0" />
+    <PackageReference Include="Azure.Communication.Common" Version="1.0.1" />
     <PackageReference Include="Microsoft.Bot.Builder.AI.Luis" Version="4.13.2" />
     <PackageReference Include="Microsoft.Bot.Builder.AI.Orchestrator" Version="4.13.2" />
     <PackageReference Include="Microsoft.Bot.Builder.AI.QnA" Version="4.13.2" />
@@ -24,6 +24,7 @@
     </PackageReference>
 <!--    <PackageReference Include="Microsoft.Azure.CognitiveServices.Language.LUIS.Runtime" Version="3.0.0" />
     <PackageReference Include="Microsoft.Azure.CognitiveServices.Language.LUIS.Authoring" Version="3.1.0" />-->
+    <PackageReference Include="AdaptiveCards" Version="2.7.1" />
   </ItemGroup>
 
   <ItemGroup>
@@ -34,6 +35,7 @@
 
   <ItemGroup>
     <None Remove="ClientApp\src\core\sideEffects.ts" />
+    <None Remove="ClientApp\src\containers\ConfigurationScreen.js.map" />
   </ItemGroup>
 
   <ItemGroup>
@@ -46,7 +48,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <TypeScriptCompile Include="ClientApp\src\core\sideEffects.ts" />
+    <TypeScriptCompile Include="ClientApp\src\core\sideEffects.new.ts" />
   </ItemGroup>
   <Target Name="DebugEnsureNodeEnv" BeforeTargets="Build" Condition=" '$(Configuration)' == 'Debug' And !Exists('$(SpaRoot)node_modules') ">
     <!-- Ensure Node.js is installed -->
@@ -66,7 +68,7 @@
     <!-- Include the newly-built files in the publish output -->
     <ItemGroup>
       <DistFiles Include="$(SpaRoot)build\**; $(SpaRoot)build-ssr\**" />
-      <ResolvedFileToPublish Include="@(DistFiles->'%(FullPath)')" Exclude="@(ResolvedFileToPublish)">
+      <ResolvedFileToPublish Include="@(DistFiles-&gt;'%(FullPath)')" Exclude="@(ResolvedFileToPublish)">
         <RelativePath>%(DistFiles.Identity)</RelativePath>
         <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
         <ExcludeFromSingleFile>true</ExcludeFromSingleFile>

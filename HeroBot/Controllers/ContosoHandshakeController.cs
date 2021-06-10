@@ -169,14 +169,17 @@ namespace HeroBot.Controllers
 
             List<ChatParticipant> chatParticipants = new List<ChatParticipant>
             {
-                new ChatParticipant(new CommunicationUserIdentifier(moderatorId))
+                new ChatParticipant(new CommunicationUserIdentifier(moderatorId)){DisplayName = "LUIS"}
             };
 
             Response<CreateChatThreadResult> result = await chatClient.CreateChatThreadAsync(GUID_FOR_INITIAL_TOPIC_NAME, chatParticipants);
 
             var threadId = result.Value.ChatThread.Id;
 
+
             _store.Store.Add(threadId, moderatorId);
+
+            _store.UseConfigStore[moderatorId] = new ContosoUserConfigModel() { Emoji = "🤖" };
             return threadId;
         }
     }

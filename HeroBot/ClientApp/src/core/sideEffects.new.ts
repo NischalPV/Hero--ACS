@@ -1,4 +1,4 @@
-import { Dispatch } from 'redux';
+﻿import { Dispatch } from 'redux';
 import React from 'react';
 
 import {
@@ -34,8 +34,7 @@ import {
 import {
     AzureCommunicationTokenCredential,
     CommunicationTokenRefreshOptions,
-    CommunicationUserIdentifier,
-    CommunicationIdentifier
+    CommunicationUserIdentifier
 } from '@azure/communication-common';
 import {
     ChatThreadPropertiesUpdatedEvent,
@@ -44,18 +43,57 @@ import {
     ParticipantsRemovedEvent
 } from '@azure/communication-signaling';
 
-// This function sets up the user to chat with the thread
+// var chatClientGlobal: ChatClient;
 
+//const setGlobalChatClient = () => async (dispatch: Dispatch, getState: () => State) => {
+//    let state: State = getState();
+//    console.log('inside setGlobalChatClient', state);
+//    if (state.thread.threadId === undefined) {
+//        console.error('Thread Id not created yet');
+//        return;
+//    }
+//    let threadId: string = state.thread.threadId;
+
+//    // get environment url from server
+//    let environmentUrl = await getEnvironmentUrl();
+
+//    if (environmentUrl === undefined) {
+//        console.error('unable to get environment url from server');
+//        return;
+//    }
+//    // create our user
+//    let userToken = await getToken();
+
+//    if (userToken === undefined) {
+//        console.error('unable to get a token');
+//        return;
+//    }
+
+//    const user = userToken.user as CommunicationUserIdentifier;
+
+//    let options: CommunicationTokenRefreshOptions = {
+//        token: userToken.token,
+//        tokenRefresher: () => refreshTokenAsync(user.communicationUserId),
+//        refreshProactively: true
+//    };
+
+//    let userAccessTokenCredentialNew = new AzureCommunicationTokenCredential(options);
+//    let chatClient = new ChatClient(environmentUrl, userAccessTokenCredentialNew);
+
+//    if (chatClient) {
+//        await getThreadInformation(chatClient, dispatch, getState);
+//    }
+
+//    console.log('updated state', state);
+//    chatClientGlobal = chatClient;
+
+    
+//}
+// This function sets up the user to chat with the thread
 const addUserToThread = (displayName: string, emoji: string) => async (dispatch: Dispatch, getState: () => State) => {
     let state: State = getState();
 
-    console.log(state);
-
-    const luisExists = state.threadMembers.threadMembers.some(l => l.displayName === 'LUIS');
-    //const luisExists = state.contosoClient.users;
-
-    console.log(`LUIS exists: ${luisExists}`);
-
+    console.log('inside addUserToThread', state);
     if (state.thread.threadId === undefined) {
         console.error('Thread Id not created yet');
         return;
@@ -89,11 +127,9 @@ const addUserToThread = (displayName: string, emoji: string) => async (dispatch:
     let chatClient = new ChatClient(environmentUrl, userAccessTokenCredentialNew);
 
     // set emoji for the user
-
     setEmoji(user.communicationUserId, emoji);
-
+    //chatClientGlobal = chatClient;
     // subscribe for message, typing indicator, and read receipt
-
     let chatThreadClient = await chatClient.getChatThreadClient(threadId);
     subscribeForMessage(chatClient, dispatch, getState);
     subscribeForTypingIndicator(chatClient, dispatch);
@@ -109,7 +145,7 @@ const addUserToThread = (displayName: string, emoji: string) => async (dispatch:
         {
             identity: user.communicationUserId,
             token: userToken.token,
-            displayName: displayName,
+            displayName: displayName, 
             memberRole: 'User'
         },
         dispatch
@@ -118,6 +154,7 @@ const addUserToThread = (displayName: string, emoji: string) => async (dispatch:
     await getThreadInformation(chatClient, dispatch, getState);
     await getMessages(chatClient, dispatch, getState);
 };
+
 
 const subscribeForTypingIndicator = async (chatClient: ChatClient, dispatch: Dispatch) => {
     await chatClient.startRealtimeNotifications();
@@ -135,7 +172,6 @@ const subscribeForTypingIndicator = async (chatClient: ChatClient, dispatch: Dis
 };
 
 const subscribeForMessage = async (chatClient: ChatClient, dispatch: Dispatch, getState: () => State) => {
-    console.log('inside messageSubscriber');
     await chatClient.startRealtimeNotifications();
     chatClient.on('chatMessageReceived', async (event) => {
         let state: State = getState();
@@ -148,22 +184,10 @@ const subscribeForMessage = async (chatClient: ChatClient, dispatch: Dispatch, g
                 createdOn: event.createdOn,
                 content: { message: event.message }
             };
-            console.log(clientChatMessage);
+
             messages.push(clientChatMessage);
-            // await processMessage(chatClient, clientChatMessage, getState, dispatch);
             dispatch(setMessages(messages.sort(compareMessages)));
         }
-
-        //const chatMessage = {
-        //    sender: event.sender,
-        //    id: event.id,
-        //    senderDisplayName: event.senderDisplayName,
-        //    createdOn: event.createdOn,
-        //    content: { message: event.message }
-        //};
-        // console.log(chatMessage);
-        //await processMessage(chatClient, chatMessage, getState, dispatch);
-
     });
 };
 
@@ -172,7 +196,6 @@ const subscribeForReadReceipt = async (
     chatThreadClient: ChatThreadClient,
     dispatch: Dispatch
 ) => {
-    console.log('inside readReceipt subscriber');
     await chatClient.startRealtimeNotifications();
     chatClient.on('readReceiptReceived', async (event) => {
         let receipts: ChatMessageReadReceipt[] = [];
@@ -191,7 +214,6 @@ const subscribeForChatParticipants = async (
     dispatch: Dispatch,
     getState: () => State
 ) => {
-    console.log('inside ChatParticipants Subscriber');
     chatClient.on('participantsRemoved', async (event: ParticipantsRemovedEvent) => {
         const state = getState();
         let participants: ChatParticipant[] = [];
@@ -262,7 +284,6 @@ const subscribeForChatParticipants = async (
 };
 
 const subscribeForTopicUpdated = async (chatClient: ChatClient, dispatch: Dispatch, getState: () => State) => {
-    console.log('inside TopicUpdate subscriber');
     chatClient.on('chatThreadPropertiesUpdated', async (e: ChatThreadPropertiesUpdatedEvent) => {
         const state = getState();
         let threadId = state.thread.threadId;
@@ -277,7 +298,6 @@ const subscribeForTopicUpdated = async (chatClient: ChatClient, dispatch: Dispat
 };
 
 const sendTypingNotification = () => async (dispatch: Dispatch, getState: () => State) => {
-    console.log('inside typingNotification Subscriber');
     let state: State = getState();
     let chatClient = state.contosoClient.chatClient;
     if (chatClient === undefined) {
@@ -293,7 +313,6 @@ const sendTypingNotification = () => async (dispatch: Dispatch, getState: () => 
 };
 
 const updateTypingUsers = () => async (dispatch: Dispatch, getState: () => State) => {
-    //console.log('inside TypingUser subscriber');
     let typingUsers = [];
     let state: State = getState();
     let typingNotifications = state.chat.typingNotifications;
@@ -315,54 +334,12 @@ const updateTypingUsers = () => async (dispatch: Dispatch, getState: () => State
 };
 
 const shouldDisplayTyping = (lastReceivedTypingEventDate: number) => {
-    // console.log('inside displaytyping subscriber');
     let currentDate = new Date();
     let timeSinceLastTypingNotificationMs = currentDate.getTime() - lastReceivedTypingEventDate;
     return timeSinceLastTypingNotificationMs <= MINIMUM_TYPING_INTERVAL_IN_MILLISECONDS;
 };
 
-const sendMessageOverride = (messageContent: string, userId: string, displayName: string) => async (dispatch: Dispatch, getState: () => State) => {
-    console.log('inside overriden SendMessage');
-    let state: State = getState();
-    let chatClient = state.contosoClient.chatClient;
-
-    if (chatClient === undefined) {
-        console.error('Chat Client not created yet');
-        return;
-    }
-    let threadId = state.thread.threadId;
-    if (threadId === undefined) {
-        console.error('Thread Id not created yet');
-        return;
-    }
-
-    //let displayName = state.contosoClient.user.displayName;
-    //let userId = state.contosoClient.user.identity;
-
-    // we use this client message id to have a local id for messages
-    // if we fail to send the message we'll at least be able to show that the message failed to send on the client
-
-    let clientMessageId = (Math.floor(Math.random() * MAXIMUM_INT64) + 1).toString(); //generate a random unsigned Int64 number
-
-    let newMessage = createNewClientChatMessage(userId, displayName, clientMessageId, messageContent);
-
-    let messages = getState().chat.messages;
-    messages.push(newMessage);
-    dispatch(setMessages(messages));
-
-    await sendMessageHelper(
-        await chatClient.getChatThreadClient(threadId),
-        messageContent,
-        displayName,
-        clientMessageId,
-        dispatch,
-        getState
-    );
-
-}
-
 const sendMessage = (messageContent: string) => async (dispatch: Dispatch, getState: () => State) => {
-    console.log('inside SendMessage');
     let state: State = getState();
     let chatClient = state.contosoClient.chatClient;
     if (chatClient === undefined) {
@@ -379,9 +356,7 @@ const sendMessage = (messageContent: string) => async (dispatch: Dispatch, getSt
 
     // we use this client message id to have a local id for messages
     // if we fail to send the message we'll at least be able to show that the message failed to send on the client
-
     let clientMessageId = (Math.floor(Math.random() * MAXIMUM_INT64) + 1).toString(); //generate a random unsigned Int64 number
-
     let newMessage = createNewClientChatMessage(userId, displayName, clientMessageId, messageContent);
 
     let messages = getState().chat.messages;
@@ -396,14 +371,9 @@ const sendMessage = (messageContent: string) => async (dispatch: Dispatch, getSt
         dispatch,
         getState
     );
-
-    await processMessage(chatClient, newMessage, getState, dispatch);
-
-
 };
 
 const isValidThread = (threadId: string) => async (dispatch: Dispatch) => {
-    console.log('inside isValidThread');
     try {
         let validationRequestOptions = { method: 'GET' };
         let validationResponse = await fetch('/isValidThread/' + threadId, validationRequestOptions);
@@ -419,7 +389,6 @@ const isValidThread = (threadId: string) => async (dispatch: Dispatch) => {
 };
 
 const getMessages = async (chatClient: ChatClient, dispatch: Dispatch, getState: () => State) => {
-    console.log('inside getMessages');
     let state: State = getState();
     if (chatClient === undefined) {
         console.error('Chat Client not created yet');
@@ -444,7 +413,6 @@ const getMessages = async (chatClient: ChatClient, dispatch: Dispatch, getState:
 };
 
 const createThread = async () => {
-    console.log('inside createThread');
     let threadId = await createThreadHelper();
     if (threadId !== null) {
         window.location.href += `?threadId=${threadId}`;
@@ -454,7 +422,6 @@ const createThread = async () => {
 };
 
 const addThreadMember = () => async (dispatch: Dispatch, getState: () => State) => {
-    console.log('inside addThreadMember');
     let state: State = getState();
     let user = state.contosoClient.user;
     let threadId = state.thread.threadId;
@@ -476,7 +443,6 @@ const addThreadMember = () => async (dispatch: Dispatch, getState: () => State) 
 };
 
 const removeThreadMemberByUserId = (userId: string) => async (dispatch: Dispatch, getState: () => State) => {
-    console.log('inside removeThreadMemberByUserId');
     let state: State = getState();
     let chatClient = state.contosoClient.chatClient;
     let threadId = state.thread.threadId;
@@ -499,7 +465,6 @@ const removeThreadMemberByUserId = (userId: string) => async (dispatch: Dispatch
 };
 
 const getThreadMembers = () => async (dispatch: Dispatch, getState: () => State) => {
-    console.log('inside getThreadMembers')
     let state: State = getState();
     let chatClient = state.contosoClient.chatClient;
     if (chatClient === undefined) {
@@ -529,9 +494,7 @@ const getThreadMembers = () => async (dispatch: Dispatch, getState: () => State)
 
 // We want to grab everything about the chat thread that has occured before we register for events.
 // We care about pre-existing messages, the chat topic, and the participants in this chat
-
 const getThreadInformation = async (chatClient: ChatClient, dispatch: Dispatch, getState: () => State) => {
-    console.log('inside getThreadInformation');
     let state: State = getState();
     if (chatClient === undefined) {
         console.error('Chat Client not created yet');
@@ -605,22 +568,18 @@ const getThreadInformation = async (chatClient: ChatClient, dispatch: Dispatch, 
     dispatch(setThreadMembers(validChatParticipants));
 };
 
-
 const updateThreadTopicName = async (
-
     chatClient: ChatClient,
     threadId: string,
     topicName: string,
     setIsSavingTopicName: React.Dispatch<boolean>
 ) => {
-    console.log('inside updateThreadTopicName');
     const chatThreadClient = await chatClient.getChatThreadClient(threadId);
     updateThreadTopicNameHelper(chatThreadClient, topicName, setIsSavingTopicName);
 };
 
 // Thread Helper
 const createThreadHelper = async () => {
-    console.log('inside createThreadHelper');
     try {
         let createThreadRequestOptions = { method: 'POST' };
         let createThreadResponse = await fetch('/createThread', createThreadRequestOptions);
@@ -636,7 +595,6 @@ const updateThreadTopicNameHelper = async (
     topicName: string,
     setIsSavingTopicName: React.Dispatch<boolean>
 ) => {
-    console.log('inside updateThreadTopicNameHelper');
     try {
         await chatThreadClient.updateTopic(topicName);
         setIsSavingTopicName(false);
@@ -647,9 +605,6 @@ const updateThreadTopicNameHelper = async (
 
 // Thread Member Helper
 const addThreadMemberHelper = async (threadId: string, user: User, dispatch: Dispatch) => {
-    console.log(`inside addThreadMemberHelper`);
-    console.log(user);
-
     try {
         let body = {
             id: user.identity,
@@ -675,7 +630,6 @@ const sendMessageHelper = async (
     dispatch: Dispatch,
     getState: () => State
 ) => {
-    console.log("inside sendMessageHelper");
     // for real time messages we want to store it locally and render it and then sync it with the server message later
     // 1. send the message
     // 2. cache the message locally using the message.id
@@ -683,47 +637,9 @@ const sendMessageHelper = async (
     try {
         const messageResult = await chatThreadClient.sendMessage(
             { content: messageContent },
-            { senderDisplayName: displayName },
+            { senderDisplayName: displayName }
         );
         const message: ChatMessage = await chatThreadClient.getMessage(messageResult.id);
-        console.log(message);
-        updateMessagesArray(dispatch, getState, convertToClientChatMessage(message, clientMessageId));
-    } catch (error) {
-        console.error('Failed at getting messages, Error: ', error);
-        let failedMessages = getState().chat.failedMessages;
-        failedMessages.push(clientMessageId);
-        setFailedMessages(failedMessages);
-
-        const message = getState().chat.messages.filter((message) => message.clientMessageId === clientMessageId)[0];
-        message.failed = true;
-        updateMessagesArray(dispatch, getState, message);
-    }
-};
-
-const sendMessageHelperOverride = async (
-    chatThreadClient: ChatThreadClient,
-    messageContent: string,
-    displayName: string,
-    clientMessageId: string,
-    participantId: CommunicationUserKind,
-    dispatch: Dispatch,
-    getState: () => State
-) => {
-    console.log("inside sendMessageHelperOverride");
-    // for real time messages we want to store it locally and render it and then sync it with the server message later
-    // 1. send the message
-    // 2. cache the message locally using the message.id
-    // 3. when we get the server synced message we match with the message.id
-
-    try {
-        const messageResult = await chatThreadClient.sendMessage(
-            { content: messageContent },
-            { senderDisplayName: displayName, type: 'html' },
-           //  { sender: participantId }
-        );
-        const message: ChatMessage = await chatThreadClient.getMessage(messageResult.id);
-        console.log(message);
-        message.sender = participantId;
         updateMessagesArray(dispatch, getState, convertToClientChatMessage(message, clientMessageId));
     } catch (error) {
         console.error('Failed at getting messages, Error: ', error);
@@ -739,27 +655,18 @@ const sendMessageHelperOverride = async (
 
 // Merge our local messages with server synced messages
 const updateMessagesArray = async (dispatch: Dispatch, getState: () => State, newMessage: ClientChatMessage) => {
-    console.log('inside updateMessagesArray');
-    console.log(newMessage);
     let state: State = getState();
-
     let messages: ClientChatMessage[] = state.chat.messages !== undefined ? state.chat.messages : [];
-
-    console.log(state.chat.messages)
 
     // the message id is what we we get from the server when it is synced. There will be other server attributes
     // on the message but the id should be consistent.
     messages = messages.map((message: ClientChatMessage) => {
-
         return message.clientMessageId === newMessage.clientMessageId ? Object.assign({}, message, newMessage) : message;
     });
-    console.log(messages)
     dispatch(setMessages(messages.sort(compareMessages)));
 };
 
 const getMessagesHelper = async (chatThreadClient: ChatThreadClient): Promise<ChatMessage[] | undefined> => {
-    console.log("inside getMessagesHelper");
-
     try {
         let messages: ChatMessage[] = [];
         let getMessagesResponse = await chatThreadClient.listMessages({
@@ -789,8 +696,6 @@ const getMessagesHelper = async (chatThreadClient: ChatThreadClient): Promise<Ch
             break;
         }
 
-        // console.log(messages);
-
         return messages.slice(0, INITIAL_MESSAGES_SIZE);
     } catch (error) {
         console.error('Failed at getting messages, Error: ', error);
@@ -798,10 +703,7 @@ const getMessagesHelper = async (chatThreadClient: ChatThreadClient): Promise<Ch
 };
 
 // Typing Notification Helper
-
 const sendTypingNotificationHelper = async (chatThreadClient: ChatThreadClient) => {
-    console.log("inside sendTypingNotificationHelper");
-
     try {
         await chatThreadClient.sendTypingNotification();
     } catch (error) {
@@ -810,8 +712,6 @@ const sendTypingNotificationHelper = async (chatThreadClient: ChatThreadClient) 
 };
 
 const getEnvironmentUrl = async () => {
-    console.log("inside getEnvironmentUrl");
-
     try {
         let getRequestOptions = {
             method: 'GET'
@@ -825,8 +725,6 @@ const getEnvironmentUrl = async () => {
 
 // Token Helper
 const getToken = async () => {
-    console.log("inside getToken");
-
     try {
         let getTokenRequestOptions = {
             method: 'POST'
@@ -838,100 +736,7 @@ const getToken = async () => {
     }
 };
 
-const processMessage = async (chatClient: ChatClient, message: ClientChatMessage, getState: () => State, dispatch: Dispatch,) => {
-    console.log("inside processMessage");
-
-    let state: State = getState();
-    console.log(state);
-    let clientMessageId = (Math.floor(Math.random() * MAXIMUM_INT64) + 1).toString(); //generate a random unsigned Int64 number
-
-    // let _chatClient = state.contosoClient.chatClient;
-
-    //let _chatClient = state.contosoClient.chatClient != undefined ? state.contosoClient.chatClient : new ChatClient();
-
-    // let thread = await chatClient.getChatThreadClient(threadId);
-
-
-    //console.log(message);
-
-    try {
-        let threadId = state.thread.threadId != undefined ? state.thread.threadId : '';
-        //console.log(threadId);
-        //var threadClient = await chatClient.getChatThreadClient(threadId)
-        let failed = message.failed != null ? message.failed : false;
-        //let communicationUserIdentifier = message.sender != null ? message.sender.communicationUserId : null;
-        let communicationUserIdentifier = null;
-        let body = {
-            clientMessageId: message.clientMessageId,
-            sender: message.sender,
-            senderDisplayName: message.senderDisplayName,
-            content: message.content,
-            createdOn: message.createdOn,
-            id: message.id,
-            failed: failed
-        };
-        let requestOptions = {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(body)
-            //body: body
-        }
-        let getProcessedResponse = await fetch('/processMessage', requestOptions);
-        let processedMsg = await getProcessedResponse.text().then((_responseJson) => _responseJson);
-
-        //console.log(processedMsg);
-        if (processedMsg != "") {
-            const luis = state.threadMembers.threadMembers.filter(member => member.displayName === 'LUIS')[0];
-
-            let userId = (luis.id as CommunicationUserIdentifier).communicationUserId;
-
-            console.log(userId)
-            // let clientMessageId = (Math.floor(Math.random() * MAXIMUM_INT64) + 1).toString(); //generate a random unsigned Int64 number
-
-            let newMessage = createNewClientChatMessage(userId, 'LUIS', clientMessageId, processedMsg);
-
-            let messages = getState().chat.messages;
-            messages.push(newMessage);
-            dispatch(setMessages(messages));
-
-            await sendMessageHelperOverride(
-                await chatClient.getChatThreadClient(threadId),
-                processedMsg,
-                'LUIS',
-                clientMessageId,
-                luis.id as CommunicationUserKind,
-                dispatch,
-                getState
-            );
-        }
-        
-
-        //sendMessageOverride(processedMsg, userId, "LUIS");
-        //console.log(state.threadMembers.threadMembers.filter(member = member.displayName === 'LUIS'));
-
-        //let messages = getState().chat.messages;
-        //messages.push(newMessage);
-        //dispatch(setMessages(messages));
-
-        //updateMessagesArray(dispatch, state)
-
-        //await sendMessageHelper(
-        //    await _chatClient.getChatThreadClient(threadId),
-        //    'Hello',
-        //    'LUIS',
-        //    clientMessageId,
-        //    dispatch,
-        //    getState
-        //);
-
-    } catch (error) {
-        console.error('Failed at getting token, Error: ', error);
-    }
-
-}
-
 const refreshTokenAsync = async (userIdentity: string): Promise<string> => {
-    console.log('inside refreshTokenAsync');
     return new Promise<string>((resolve, reject) => {
         return fetch('/refreshToken/' + userIdentity).then(
             (response) => {
@@ -949,8 +754,6 @@ const refreshTokenAsync = async (userIdentity: string): Promise<string> => {
 };
 
 const setEmoji = async (userId: string, emoji: string) => {
-    console.log('inside setEmoji');
-
     try {
         let getTokenRequestOptions = {
             method: 'POST',
@@ -964,8 +767,6 @@ const setEmoji = async (userId: string, emoji: string) => {
 };
 
 const getEmoji = async (userId: string) => {
-    console.log('inside getEmoji');
-
     try {
         let getTokenRequestOptions = {
             headers: { 'Content-Type': 'application/json' },
@@ -977,11 +778,9 @@ const getEmoji = async (userId: string) => {
     }
 };
 
+
 const sendReadReceipt = (messageId: string) => async (dispatch: Dispatch, getState: () => State) => {
     // This is sent when we get focus to this tab and see this message
-
-    console.log('inside sendReadReceipt');
-
     let state: State = getState();
     let chatClient = state.contosoClient.chatClient;
     if (chatClient === undefined) {
@@ -997,14 +796,68 @@ const sendReadReceipt = (messageId: string) => async (dispatch: Dispatch, getSta
 };
 
 const sendReadReceiptHelper = async (chatThreadClient: ChatThreadClient, messageId: string) => {
-    console.log('inside sendReadReceiptHelper');
-
     let postReadReceiptRequest: SendReadReceiptRequest = {
         chatMessageId: messageId
     };
     await chatThreadClient.sendReadReceipt(postReadReceiptRequest);
 };
 
+//const userExists = async (displayName: string, threadId: string) => {
+//    //let state: State = getState();
+//    //if (state.thread.threadId === undefined) {
+//    //    console.error('Thread Id not created yet');
+//    //    return;
+//    //}
+//    //let threadId: string = state.thread.threadId;
+
+//    // get environment url from server
+//    console.log("inside userExists");
+//    console.log("display name", displayName);
+//    console.log("threadid", threadId);
+//    //let environmentUrl = await getEnvironmentUrl();
+
+//    //if (environmentUrl === undefined) {
+//    //    console.error('unable to get environment url from server');
+//    //    return;
+//    //}
+//    //// create our user
+//    //let userToken = await getToken();
+
+//    //if (userToken === undefined) {
+//    //    console.error('unable to get a token');
+//    //    return;
+//    //}
+
+//    //const user = userToken.user as CommunicationUserIdentifier;
+
+//    //let options: CommunicationTokenRefreshOptions = {
+//    //    token: userToken.token,
+//    //    tokenRefresher: () => refreshTokenAsync(user.communicationUserId),
+//    //    refreshProactively: true
+//    //};
+
+//    //let userAccessTokenCredentialNew = new AzureCommunicationTokenCredential(options);
+//    //let chatClient = new ChatClient(environmentUrl, userAccessTokenCredentialNew);
+//    let chatClient = chatClientGlobal;
+//    console.log('Chat client', chatClient);
+//    let chatThreadClient = await chatClient.getChatThreadClient(threadId);
+
+//    let iteratableParticipants = chatThreadClient.listParticipants().byPage();
+//    console.log('iteratableParticipants', iteratableParticipants);
+//    let chatParticipants = [];
+
+//    for await (const page of iteratableParticipants) {
+//        for (const chatParticipant of page) {
+//            chatParticipants.push(chatParticipant);
+//        }
+//    }
+
+//    console.log('Chat Participants', chatParticipants);
+
+//    return chatParticipants.some(l => l.displayName == displayName)
+
+    // return true;
+// }
 export {
     sendMessage,
     getMessages,
@@ -1019,5 +872,7 @@ export {
     sendTypingNotification,
     updateTypingUsers,
     isValidThread,
-    updateThreadTopicName
+    updateThreadTopicName,
+    // userExists,
+    //setGlobalChatClient
 };
