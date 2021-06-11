@@ -44,6 +44,7 @@ namespace HeroBot
             // Create the bot services (LUIS, QnA) as a singleton.
             services.AddSingleton<IBotServices, BotServices>();
             services.AddSingleton<IWeatherServices, WeatherServices>();
+            services.AddSingleton<ICardService, CardService>();
 
             // Create the bot as a transient.
             services.AddTransient<IBot, DispatchBot>();

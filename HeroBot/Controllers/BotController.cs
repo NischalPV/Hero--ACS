@@ -2,6 +2,9 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using AdaptiveCards;
+using AdaptiveCards.Rendering.Html;
+using AdaptiveCards.Templating;
 using Azure.Communication.Chat;
 using HeroBot.Models;
 using HeroBot.Services;
@@ -28,14 +31,16 @@ namespace HeroBot.Controllers
 
         private readonly IBotServices _botServices;
         private readonly IWeatherServices _weatherServices;
+        private readonly ICardService _cardServices;
         private readonly ILogger<BotController> _logger;
         private readonly IConfiguration _configuration;
 
-        public BotController(ILogger<BotController> logger, IBotServices botServices, IWeatherServices weatherServices, IConfiguration configuration)
+        public BotController(ILogger<BotController> logger, IBotServices botServices, IWeatherServices weatherServices, ICardService cardServices, IConfiguration configuration)
         {
             _logger = logger;
             _botServices = botServices;
             _weatherServices = weatherServices;
+            _cardServices = cardServices;
             _configuration = configuration;
         }
 
@@ -47,6 +52,12 @@ namespace HeroBot.Controllers
             var weatherClient = _botServices.LuisWeatherRuntimeClient(_configuration);
             var ApplicationId = _configuration["LuisWeatherAppId"];
             var DocumentAppId = _configuration["LuisDocumentAppId"];
+
+            var jsonData = await _cardServices.ReadCardSectionAsync("weather");
+            var template = new AdaptiveCardTemplate(jsonData.template);
+            
+            
+           
             try
             {
                 var result = await weatherClient.Prediction.ResolveAsync(ApplicationId, message.Content.Message);
@@ -56,9 +67,21 @@ namespace HeroBot.Controllers
 
                 if(result.Entities.Count > 0)
                 {
+                    
                     WeatherDetails = await _weatherServices.GetCurrentWeather(result.Entities[0].Entity);
+                    var WeatherData = _cardServices.PrepareWeatherData(WeatherDetails);
+                    string cardJson = template.Expand(WeatherData);
+                    var card = AdaptiveCard.FromJson(cardJson);
+
+                    AdaptiveCardRenderer renderer = new AdaptiveCardRenderer();
+                    // Render the card
+                    RenderedAdaptiveCard renderedCard = renderer.RenderCard(card.Card);
+
+                    // Get the output HTML 
+                    HtmlTag html = renderedCard.Html;
+                    return Ok($"{html}");
                     //return Ok($"Weather Details:\n\nLooks like {WeatherDetails.SelectToken("weather[0].description")}\n\nTemperature: {WeatherDetails.SelectToken("main.temp")}\n\nFeels like: {WeatherDetails.SelectToken("main.feels_like")}\n\nHumidity: {WeatherDetails.SelectToken("main.humidity")}");
-                    return Ok($"<div><b>Weather Details:</b></br>Looks like {WeatherDetails.SelectToken("weather[0].description")}</br>Temperature: {WeatherDetails.SelectToken("main.temp")}  &deg;C </br>Feels like: {WeatherDetails.SelectToken("main.feels_like")} &deg;C </br>Humidity: {WeatherDetails.SelectToken("main.humidity")}</div>");
+                    //return Ok($"<div><b>Weather Details:</b></br>Looks like {WeatherDetails.SelectToken("weather[0].description")}</br>Temperature: {WeatherDetails.SelectToken("main.temp")}  &deg;C </br>Feels like: {WeatherDetails.SelectToken("main.feels_like")} &deg;C </br>Humidity: {WeatherDetails.SelectToken("main.humidity")}</div>");
 
                 }
                 // var json = JsonConvert.SerializeObject(result, Formatting.Indented);

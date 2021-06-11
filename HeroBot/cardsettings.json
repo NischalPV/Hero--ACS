@@ -1,0 +1,128 @@
+﻿{
+  "weather": {
+    "template": {
+      "$schema": "http://adaptivecards.io/schemas/adaptive-card.json",
+      "type": "AdaptiveCard",
+      "version": "1.2",
+      "body": [
+        {
+          "type": "TextBlock",
+          "text": "${name}, ${country}",
+          "size": "Large",
+          "isSubtle": true,
+          "wrap": true
+        },
+        {
+          "type": "TextBlock",
+          "text": "{{DATE(${formatEpoch(dt, 'yyyy-MM-ddTHH:mm:ssZ')}, SHORT)}} {{TIME(${formatEpoch(dt, 'yyyy-MM-ddTHH:mm:ssZ')})}}",
+          "spacing": "None",
+          "wrap": true
+        },
+        {
+          "type": "ColumnSet",
+          "columns": [
+            {
+              "type": "Column",
+              "width": "auto",
+              "items": [
+                {
+                  "type": "Image",
+                  "url": "${url}",
+                  "size": "Small"
+                }
+              ]
+            },
+            {
+              "type": "Column",
+              "width": "auto",
+              "items": [
+                {
+                  "type": "TextBlock",
+                  "text": "${temp}",
+                  "size": "ExtraLarge",
+                  "spacing": "None",
+                  "wrap": true
+                }
+              ]
+            },
+            {
+              "type": "Column",
+              "width": "stretch",
+              "items": [
+                {
+                  "type": "TextBlock",
+                  "text": "°C",
+                  "weight": "Bolder",
+                  "spacing": "Small",
+                  "wrap": true
+                }
+              ]
+            },
+            {
+              "type": "Column",
+              "width": "stretch",
+              "items": [
+                {
+                  "type": "TextBlock",
+                  "text": "Hi ${tempMax}",
+                  "horizontalAlignment": "Left",
+                  "wrap": true
+                },
+                {
+                  "type": "TextBlock",
+                  "text": "Lo ${tempMin}",
+                  "horizontalAlignment": "Left",
+                  "spacing": "None",
+                  "wrap": true
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "data": {
+      "coord": {
+        "lon": -122.12,
+        "lat": 47.67
+      },
+      "weather": [
+        {
+          "id": 802,
+          "main": "Clouds",
+          "description": "scattered clouds",
+          "icon": "03n"
+        }
+      ],
+      "base": "stations",
+      "main": {
+        "temp": 281.05,
+        "pressure": 1022,
+        "humidity": 81,
+        "tempMin": 278.15,
+        "tempMax": 283.15
+      },
+      "visibility": 16093,
+      "wind": {
+        "speed": 4.1,
+        "deg": 360
+      },
+      "rain": {},
+      "clouds": {
+        "all": 40
+      },
+      "dt": 1572920478,
+      "sys": {
+        "type": 1,
+        "id": 5798,
+        "country": "US",
+        "sunrise": 1572879421,
+        "sunset": 1572914822
+      },
+      "timezone": -28800,
+      "id": 5808079,
+      "name": "Redmond",
+      "cod": 200
+    }
+  }
+}
