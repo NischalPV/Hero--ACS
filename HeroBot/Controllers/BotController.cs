@@ -53,7 +53,8 @@ namespace HeroBot.Controllers
             var ApplicationId = _configuration["LuisWeatherAppId"];
             var DocumentAppId = _configuration["LuisDocumentAppId"];
 
-            var jsonData = await _cardServices.ReadCardSectionAsync("weather");
+            //var jsonData = await _cardServices.ReadCardSectionAsync("weather");
+            var jsonData = await _cardServices.ReadCardSectionAsync("documentList");
             var template = new AdaptiveCardTemplate(jsonData.template);
             
             
@@ -70,16 +71,17 @@ namespace HeroBot.Controllers
                     
                     WeatherDetails = await _weatherServices.GetCurrentWeather(result.Entities[0].Entity);
                     var WeatherData = _cardServices.PrepareWeatherData(WeatherDetails);
-                    string cardJson = template.Expand(WeatherData);
-                    var card = AdaptiveCard.FromJson(cardJson);
+                    string cardJson = template.Expand(jsonData.data);
+                    //string cardJson = template.Expand(WeatherData);
+                    //var card = AdaptiveCard.FromJson(cardJson);
 
-                    AdaptiveCardRenderer renderer = new AdaptiveCardRenderer();
-                    // Render the card
-                    RenderedAdaptiveCard renderedCard = renderer.RenderCard(card.Card);
+                    //AdaptiveCardRenderer renderer = new AdaptiveCardRenderer();
+                    //// Render the card
+                    //RenderedAdaptiveCard renderedCard = renderer.RenderCard(card.Card);
 
-                    // Get the output HTML 
-                    HtmlTag html = renderedCard.Html;
-                    return Ok($"{html}");
+                    //// Get the output HTML 
+                    //HtmlTag html = renderedCard.Html;
+                    return Ok(cardJson);
                     //return Ok($"Weather Details:\n\nLooks like {WeatherDetails.SelectToken("weather[0].description")}\n\nTemperature: {WeatherDetails.SelectToken("main.temp")}\n\nFeels like: {WeatherDetails.SelectToken("main.feels_like")}\n\nHumidity: {WeatherDetails.SelectToken("main.humidity")}");
                     //return Ok($"<div><b>Weather Details:</b></br>Looks like {WeatherDetails.SelectToken("weather[0].description")}</br>Temperature: {WeatherDetails.SelectToken("main.temp")}  &deg;C </br>Feels like: {WeatherDetails.SelectToken("main.feels_like")} &deg;C </br>Humidity: {WeatherDetails.SelectToken("main.humidity")}</div>");
 

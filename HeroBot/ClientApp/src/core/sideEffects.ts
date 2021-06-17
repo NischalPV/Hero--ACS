@@ -44,6 +44,8 @@ import {
     ParticipantsRemovedEvent
 } from '@azure/communication-signaling';
 
+import * as AdaptiveCards from "adaptivecards";
+
 // This function sets up the user to chat with the thread
 
 const addUserToThread = (displayName: string, emoji: string) => async (dispatch: Dispatch, getState: () => State) => {
@@ -877,10 +879,25 @@ const processMessage = async (chatClient: ChatClient, message: ClientChatMessage
             //body: body
         }
         let getProcessedResponse = await fetch('/processMessage', requestOptions);
+        // console.log('getProcessedResponse', getProcessedResponse);
         let processedMsg = await getProcessedResponse.text().then((_responseJson) => _responseJson);
+        var cardtext = processedMsg;
+        // console.log('processedMsg', processedMsg);
+        var cardJson = JSON.parse(processedMsg);
+        console.log('cardJson', cardJson);
+        // if(processedMsg[''])
+
+        if(cardJson.type == 'AdaptiveCard'){
+            var adaptiveCard = new AdaptiveCards.AdaptiveCard();
+            adaptiveCard.parse(cardJson);
+            var renderedCard = adaptiveCard.render();
+            console.log(renderedCard);
+            cardtext = renderedCard?.outerHTML != undefined ? renderedCard.outerHTML : ''
+            console.log(cardtext);
+        }
 
         //console.log(processedMsg);
-        if (processedMsg != "") {
+        if (cardtext != "") {
             const luis = state.threadMembers.threadMembers.filter(member => member.displayName === 'LUIS')[0];
 
             let userId = (luis.id as CommunicationUserIdentifier).communicationUserId;
@@ -888,7 +905,7 @@ const processMessage = async (chatClient: ChatClient, message: ClientChatMessage
             console.log(userId)
             // let clientMessageId = (Math.floor(Math.random() * MAXIMUM_INT64) + 1).toString(); //generate a random unsigned Int64 number
 
-            let newMessage = createNewClientChatMessage(userId, 'LUIS', clientMessageId, processedMsg);
+            let newMessage = createNewClientChatMessage(userId, 'LUIS', clientMessageId, cardtext);
 
             let messages = getState().chat.messages;
             messages.push(newMessage);
@@ -896,7 +913,7 @@ const processMessage = async (chatClient: ChatClient, message: ClientChatMessage
 
             await sendMessageHelperOverride(
                 await chatClient.getChatThreadClient(threadId),
-                processedMsg,
+                cardtext,
                 'LUIS',
                 clientMessageId,
                 luis.id as CommunicationUserKind,
